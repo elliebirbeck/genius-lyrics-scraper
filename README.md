@@ -1,1 +1,1 @@
-# genius-api
+# genius-lyrics-scraper
