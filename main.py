@@ -106,6 +106,7 @@ if __name__ == '__main__':
 	for l in lyrics:
 		f.write(l)
 	f.close()
+	print("File saved at",filename)
 
 
 
