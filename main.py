@@ -67,7 +67,8 @@ def get_lyrics(song_urls):
 			[h.extract() for h in html("script")]
 
 			text = html.find("div",class_="lyrics").get_text()
-			if not text is "Lyrics will be available as soon as the song is released. Stay tuned!":
+
+			if "Lyrics will be available" not in text:
 				lyrics.append(text)
 				
 		if len(lyrics)%100==0:
@@ -81,7 +82,7 @@ if __name__ == '__main__':
 
 	# artist input
 	if len(sys.argv[1:])==0:
-		print("You must pass a parameter for artist name e.g. 'Kanye West'")
+		print("You must pass a parameter for artist name e.g. \"Kanye West\"")
 		sys.exit(0)
 	else:
 		artist_name = sys.argv[1]
@@ -98,7 +99,7 @@ if __name__ == '__main__':
 	lyrics = get_lyrics(song_urls)
 
 	# save to txt file
-	if sys.argv[2]:
+	if len(sys.argv)>2:
 		filename = sys.argv[2] + ".txt"
 	else:
 		filename = "lyrics.txt"
