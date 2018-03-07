@@ -70,12 +70,12 @@ def get_lyrics(song_urls):
 
 			if "Lyrics will be available" not in text:
 				lyrics.append(text)
+				lyrics.append("<EOS>")
 				
-		if len(lyrics)%100==0:
-			print(len(lyrics), "/", len(song_urls), "lyrics processed")
+		if (len(lyrics)/2)%100==0:
+			print(int(len(lyrics)/2), "/", len(song_urls), "lyrics processed")
 	
 	return lyrics 
-
 
 
 if __name__ == '__main__':

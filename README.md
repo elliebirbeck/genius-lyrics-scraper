@@ -8,4 +8,6 @@ A script which works around the limitations of the [Genius API](https://docs.gen
 
 Run with the artist name as the first arg and (optionally) the filename as the second arg. E.g:
 
-`python main.py "Kendrick Lamar" "kendrick_lyrics"`
+`python main.py "Amy Winehouse" "amy_lyrics"`
+
+The sample output file `amy_lyrics.txt` is provided in the repo. It provides all songs in one file, each seperated by an `<EOS>` tag.
