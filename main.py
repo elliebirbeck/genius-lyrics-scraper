@@ -1,8 +1,29 @@
 import requests
 import config
 import sys
+import requests
 from bs4 import BeautifulSoup
 
+def html_parser(url):
+    try :
+
+        response = requests.get("https://genius.com" + url)
+        response.raise_for_status()  # Check for request errors
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # Find all <div> tags where the class starts with "Lyrics__Container"
+        lyrics_containers = soup.select('div[class^="Lyrics__Container"]')
+
+        lyrics_text = []
+        for container in lyrics_containers:
+            lyrics_text.append(container.get_text(separator="\n", strip=True))
+
+        full_lyrics = "\n".join(lyrics_text)
+
+        return full_lyrics
+    except Exception as e :
+        print(e)
+        return ""
 
 def get_artist_id(artist_name):
 
@@ -23,61 +44,6 @@ def get_artist_id(artist_name):
 		print("Artist", artist_name, "not found.")
 		sys.exit(0)
 
-
-def get_song_urls(artist_id):
-
-	urls = []
-	
-	page_count = 1
-	end_of_pages = False
-	while not(end_of_pages):
-
-		# get results of current page
-		temp_url = base_url+'/artists/'+str(artist_id)+'/songs?per_page=50&page='+str(page_count)
-		response = requests.get(temp_url, headers=headers)
-		json = response.json()
-
-		for song in json["response"]["songs"]:
-
-			if song["primary_artist"]["id"]==artist_id:
-
-				urls.append(song["path"])
-		
-		if json["response"]["next_page"]==None:
-			end_of_pages=True
-		else:
-			page_count+=1
-
-	print(len(urls), "songs found")
-
-	return urls
-
-
-def get_lyrics(song_urls):
-
-	lyrics = []
-
-	for url in song_urls:
-
-		page = requests.get("https://genius.com" + url)
-
-		if page:
-
-			html = BeautifulSoup(page.text, "html.parser")
-			[h.extract() for h in html("script")]
-
-			text = html.find("div",class_="lyrics").get_text()
-
-			if "Lyrics will be available" not in text:
-				lyrics.append(text)
-				lyrics.append("<EOS>")
-				
-		if (len(lyrics)/2)%100==0:
-			print(int(len(lyrics)/2), "/", len(song_urls), "lyrics processed")
-	
-	return lyrics 
-
-
 if __name__ == '__main__':
 
 	# artist input
@@ -95,18 +61,42 @@ if __name__ == '__main__':
 
 	# get lyrics
 	artist_id = get_artist_id(artist_name)
-	song_urls = get_song_urls(artist_id)
-	lyrics = get_lyrics(song_urls)
 
-	# save to txt file
+	urls = []
+	page_count = 1	
+	end_of_pages = False
+
 	if len(sys.argv)>2:
 		filename = sys.argv[2] + ".txt"
 	else:
 		filename = "lyrics.txt"
-	f = open(filename,"w")
-	for l in lyrics:
-		f.write(l)
-	f.close()
+
+	while not(end_of_pages):
+
+		# get results of current page
+		temp_url = base_url+'/artists/'+str(artist_id)+'/songs?per_page=50&page='+str(page_count)
+		response = requests.get(temp_url, headers=headers)
+		json = response.json()
+
+		for song in json["response"]["songs"]:
+
+			if song["primary_artist"]["id"]==artist_id:
+
+				urls.append(song["path"])
+				text = html_parser(song["path"])
+
+				if "Lyrics will be available" not in text:
+
+					f = open(filename,"a")
+					f.write(text + "\n\n")
+					f.close()
+					
+		if json["response"]["next_page"]==None:
+			end_of_pages=True
+		else:
+			page_count+=1
+
+	print(len(urls), "songs found")
 	print("File saved at",filename)
 
 
